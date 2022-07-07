@@ -2,6 +2,8 @@ import axios from "axios";
 import fs from "fs";
 import EventEmitter from "events";
 import { Logger } from "tslog";
+import * as stream from "stream";
+import { promisify } from "util";
 
 export class Watcher {
     private eTag?: string;
@@ -61,7 +63,11 @@ export class Watcher {
         });
 
         const fileStream = fs.createWriteStream(this.filePath);
-        await response.data.pipe(fileStream);
+        const promisifyFinished = promisify(stream.finished);
+
+        response.data.pipe(fileStream);
+        await promisifyFinished(fileStream);
+
         return response.headers['last-modified'] ?? undefined;
     }
 
