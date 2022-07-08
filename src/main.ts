@@ -4,6 +4,7 @@ import { Logger } from "tslog";
 import 'dotenv/config';
 import { Watcher } from './watcher/watcher.service';
 import { sep } from 'path';
+import { RatingParser } from './rating-parser/rating-parser.service';
 
 
 const token = process.env.TOKEN;
@@ -11,6 +12,8 @@ const chatId = process.env.CHAT_ID;
 const url = process.env.URL;
 const fileName = process.env.FILE_NAME;
 const frequency = process.env.FREQUENCY ?? '60000';
+const directions = process.env.TARGET_DIRECTIONS ? JSON.parse(process.env.TARGET_DIRECTIONS) : undefined;
+const snils = process.env.TARGET_SNILS ?? '123';
 if (!token || !chatId || !url || !fileName) {
     throw new Error('Token, chatId, url, fileName must be specified in .env file');
 }
@@ -18,7 +21,13 @@ if (!token || !chatId || !url || !fileName) {
 //initialize
 const logger: Logger = new Logger();
 const telegram: Telegram = new Telegram(logger, token);
-const watcher: Watcher = new Watcher(logger, (__dirname + sep + fileName), url, Number.parseInt(frequency));
+const parser: RatingParser = new RatingParser(
+    '\n',
+    directions,
+    'No',
+    snils, 
+);
+const watcher: Watcher = new Watcher(logger, parser, (__dirname + sep + fileName), url, Number.parseInt(frequency));
 const app = new App(chatId, telegram, watcher, logger);
 
 // starting

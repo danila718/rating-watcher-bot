@@ -5,6 +5,7 @@
   "main": "./dist/main.js",
   "scripts": {
     "start": "npm run build && node ./dist/main.js",
+    "pm2": "npm run build && NODE_ENV=production pm2 start ecosystem.config.js",
     "dev": "nodemon",
     "dev:inspect": "nodemon -e ts,json --exec node --inspect=localhost:9222 --loader ts-node/esm src/main.ts",
     "build": "tsc",
@@ -14,16 +15,15 @@
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^18.0.3",
+    "@types/node-telegram-bot-api": "^0.57.1",
     "@types/pdf-parse": "^1.1.1",
     "nodemon": "^2.0.19",
     "ts-node": "^10.8.2",
     "typescript": "^4.7.4"
   },
   "dependencies": {
-    "@types/node-telegram-bot-api": "^0.57.1",
     "axios": "^0.27.2",
     "dotenv": "^16.0.1",
-    "moment": "^2.29.4",
     "node-telegram-bot-api": "^0.58.0",
     "pdf-parse": "^1.1.1",
     "tslog": "^3.3.3"

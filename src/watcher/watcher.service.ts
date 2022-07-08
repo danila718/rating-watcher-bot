@@ -4,14 +4,18 @@ import EventEmitter from "events";
 import { Logger } from "tslog";
 import * as stream from "stream";
 import { promisify } from "util";
+import pdf from 'pdf-parse';
+import { IRatingParser, RatingObject } from "../rating-parser/rating-parser.interface";
 
 export class Watcher {
     private eTag?: string;
+    private lastUpdated?: string;
     private eventEmmitter: EventEmitter;
     private timer ?: NodeJS.Timer;
 
     constructor(
         private logger: Logger,
+        private parser: IRatingParser,
         readonly filePath: string,
         readonly targetUrl: string,
         readonly frequency: number,
@@ -26,16 +30,20 @@ export class Watcher {
                 this.logger.info(`No updates, etag: ${this.eTag}`);
                 return;
             }
-            const lastUpdated = await this.updateDoument();
-            this.eventEmmitter.emit('change', lastUpdated, this.filePath);
             this.eTag = newEtag;
-            this.logger.info(`NEW ETAG: ${this.eTag}`);
+            const rating = await this.updateDoument();
+            if (!rating || this.lastUpdated == rating.lastUpdated) {
+                return;
+            }
+            this.lastUpdated = rating.lastUpdated;
+            this.logger.info(`Changes detected! New Etag: ${this.eTag}; New LastUpdated: ${this.lastUpdated}`);
+            this.eventEmmitter.emit('change', rating, this.filePath);
         }, this.frequency);
 
         return this.eventEmmitter;
     }
 
-    unWatch() {
+    unwatch() {
         this.eventEmmitter.removeAllListeners('change');
         clearInterval(this.timer);
         console.log('clearing ', this.timer, this.eventEmmitter.listenerCount('change'));
@@ -68,7 +76,19 @@ export class Watcher {
         response.data.pipe(fileStream);
         await promisifyFinished(fileStream);
 
-        return response.headers['last-modified'] ?? undefined;
+        return this.getContent();
+    }
+
+    private async getContent(): Promise<RatingObject | undefined> {
+        const dataBuffer = await fs.promises.readFile(this.filePath);
+        const data = await pdf(dataBuffer);
+
+        let text = data.text;
+        if (!text) {
+            return;
+        }
+
+        return this.parser.parse(text);
     }
 
     private async getEtag() {
