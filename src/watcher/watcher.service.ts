@@ -33,9 +33,11 @@ export class Watcher {
             this.eTag = newEtag;
             const rating = await this.getRatingObject();
             if (!rating || this.lastRating?.lastUpdated === rating.lastUpdated) {
+                this.logger.info(`No updates lastUpdated, etag: ${this.eTag}`);
                 return;
             }
             if (this.lastRating && this.isEqualPositions(this.lastRating, rating)) {
+                this.logger.info(`No updates rating, etag: ${this.eTag}`);
                 return;
             }
             this.lastRating = rating;
