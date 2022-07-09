@@ -6,6 +6,6 @@ module.exports = {
     watch: false,
     autorestart: true,
     max_memory_restart: "250M",
-    cron_restart: "1 0 * * *",
+    cron_restart: "10 0 * * *",
   }]
 }
