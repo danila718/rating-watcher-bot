@@ -9,15 +9,14 @@ export class Telegram implements ITelegram {
         private logger: Logger,
         readonly token: string
     ) {
-        this.bot = new TelegramBot(this.token, { filepath: false, });
+        this.bot = new TelegramBot(this.token, { filepath: false });
     }
 
     bootstrap() {
-        this.bot.on('message', (msg) => {
-            this.logger.info(`Message was received`);
-            this.logger.info(msg);
-            this.bot.sendMessage(msg?.chat?.id, `Received your messag: ${msg?.text}`);
-        })
+        // this.bot.on('message', (msg) => {
+        //     this.logger.info(`Message was received`);
+        //     this.bot.sendMessage(msg?.chat?.id, `Received your messag: ${msg?.text}`);
+        // })
 
         // Enable graceful stop
         // process.once('SIGINT', () => this.bot.stopPolling());

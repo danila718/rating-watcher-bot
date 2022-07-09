@@ -9,7 +9,7 @@ import { IRatingParser, RatingObject } from "../rating-parser/rating-parser.inte
 
 export class Watcher {
     private eTag?: string;
-    private lastUpdated?: string;
+    private lastRating?: RatingObject;
     private eventEmmitter: EventEmitter;
     private timer ?: NodeJS.Timer;
 
@@ -31,12 +31,15 @@ export class Watcher {
                 return;
             }
             this.eTag = newEtag;
-            const rating = await this.updateDoument();
-            if (!rating || this.lastUpdated == rating.lastUpdated) {
+            const rating = await this.getRatingObject();
+            if (!rating || this.lastRating?.lastUpdated === rating.lastUpdated) {
                 return;
             }
-            this.lastUpdated = rating.lastUpdated;
-            this.logger.info(`Changes detected! New Etag: ${this.eTag}; New LastUpdated: ${this.lastUpdated}`);
+            if (this.lastRating && this.isEqualPositions(this.lastRating, rating)) {
+                return;
+            }
+            this.lastRating = rating;
+            this.logger.info(`Changes detected! New Etag: ${this.eTag}`);
             this.eventEmmitter.emit('change', rating, this.filePath);
         }, this.frequency);
 
@@ -47,6 +50,34 @@ export class Watcher {
         this.eventEmmitter.removeAllListeners('change');
         clearInterval(this.timer);
         console.log('clearing ', this.timer, this.eventEmmitter.listenerCount('change'));
+    }
+
+    private isEqualPositions(r1: RatingObject, r2: RatingObject): boolean {
+        if (r1.ratingItems.length !== r2.ratingItems.length) {
+            return false;
+        }
+
+        for (const r2Item of r2.ratingItems) {
+            const r1Item = r1.ratingItems.find((item) => item.directionName == r2Item.directionName);
+            if (!r1Item || r1Item.position !== r2Item.position) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private async getRatingObject(): Promise<RatingObject | undefined> {
+        await this.updateDoument();
+        const dataBuffer = await fs.promises.readFile(this.filePath);
+        const data = await pdf(dataBuffer);
+
+        let text = data.text;
+        if (!text) {
+            return;
+        }
+
+        return this.parser.parse(text);
     }
 
     private async updateDoument() {
@@ -74,21 +105,7 @@ export class Watcher {
         const promisifyFinished = promisify(stream.finished);
 
         response.data.pipe(fileStream);
-        await promisifyFinished(fileStream);
-
-        return this.getContent();
-    }
-
-    private async getContent(): Promise<RatingObject | undefined> {
-        const dataBuffer = await fs.promises.readFile(this.filePath);
-        const data = await pdf(dataBuffer);
-
-        let text = data.text;
-        if (!text) {
-            return;
-        }
-
-        return this.parser.parse(text);
+        return promisifyFinished(fileStream);
     }
 
     private async getEtag() {

@@ -2,6 +2,10 @@ module.exports = {
   apps : [{
     name   : "rating-checker",
     script : "./dist/main.js",
+    instances: 1,
     watch: false,
+    autorestart: true,
+    max_memory_restart: "250M",
+    cron_restart: "1 0 * * *",
   }]
 }
