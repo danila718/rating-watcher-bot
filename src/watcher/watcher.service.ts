@@ -37,7 +37,7 @@ export class Watcher {
                 return;
             }
             if (this.lastRating && this.isEqualPositions(this.lastRating, rating)) {
-                // this.lastRating.lastUpdated = rating.lastUpdated;
+                this.lastRating.lastUpdated = rating.lastUpdated;
                 this.logger.info(`No updates rating, etag: ${this.eTag}`);
                 this.eventEmmitter.emit('not_change', rating, this.filePath);    
                 return;
