@@ -29,7 +29,8 @@ export class App {
                 msg += `\n${ratingItem.directionName}\nНомер в списке: ${ratingItem.position}`;
             }
             this.logger.info('Sending Changes');
-            await this.sendDocument(filePath, (data.lastUpdated + '.pdf'), msg);
+            const filename = data.lastUpdated.match(/[\d\.]+\ [\d\:]+/g);
+            await this.sendDocument(filePath, ((filename ? filename[0] : 'file') + '.pdf'), msg);
             this.lastSendTime = Date.now();
         });
         event.on('not_change', async (data: RatingObject, filePath: string) => {
@@ -41,7 +42,8 @@ export class App {
                 msg += `\n${ratingItem.directionName}\nНомер в списке: ${ratingItem.position}`;
             }
             this.logger.info('Sending NOT Change');
-            await this.sendDocument(filePath, (data.lastUpdated + '.pdf'), msg);
+            const filename = data.lastUpdated.match(/[\d\.]+\ [\d\:]+/g);
+            await this.sendDocument(filePath, ((filename ? filename[0] : 'file') + '.pdf'), msg);
             this.lastSendTime = Date.now();
         });
     }
@@ -49,6 +51,6 @@ export class App {
     async sendDocument(filePath: string, fileName: string, caption?: string) {
         // const stream = fs.createReadStream(filePath);
         const buffer = fs.readFileSync(filePath);
-        this.telegram.bot.sendDocument(this.chatId, buffer, { caption: caption, parse_mode: 'HTML' }, { filename: fileName, contentType: 'application/pdf' });
+        this.telegram.bot.sendDocument(this.chatId, buffer, { caption: caption, parse_mode: 'HTML' }, { filename: fileName.replace(/\.(?!pdf)/g, '-').replace(/\:/g, '_'), contentType: 'application/pdf' });
     }
 }
