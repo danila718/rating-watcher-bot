@@ -26,7 +26,7 @@ export class App {
             }
             let msg = `<b>Обнаружено изменение в списках!</b>\n${data.lastUpdated}`;
             for (const ratingItem of data.ratingItems) {
-                msg += `\n${ratingItem.directionName}\nНомер в списке: ${ratingItem.position}`;
+                msg += `\n${ratingItem.directionName}\nНомер в списке: <b>${ratingItem.position}</b>`;
             }
             this.logger.info('Sending Changes');
             const filename = data.lastUpdated.match(/[\d\.]+\ [\d\:]+/g);
@@ -39,7 +39,7 @@ export class App {
             }
             let msg = `<b>Изменения в списках не обнаружены в течении ${Math.round(this.maxDelayTime / 3600000 * 100) / 100} часов</b>`;
             for (const ratingItem of data.ratingItems) {
-                msg += `\n${ratingItem.directionName}\nНомер в списке: ${ratingItem.position}`;
+                msg += `\n${ratingItem.directionName}\nНомер в списке: <b>${ratingItem.position}</b>`;
             }
             this.logger.info('Sending NOT Change');
             const filename = data.lastUpdated.match(/[\d\.]+\ [\d\:]+/g);
