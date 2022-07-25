@@ -35,9 +35,10 @@ export class RatingParser implements IRatingParser {
                     }
                     result.ratingItems.push(item);
                     directionFound = false;
-                } else if (textRow == this.directionSep) {
-                    directionFound = false;
                 }
+                // else if (textRow == this.directionSep) {
+                //     directionFound = false;
+                // }
             }
         }
 

@@ -1,6 +1,6 @@
 module.exports = {
   apps : [{
-    name   : "rating-checker",
+    name   : "rating-checker-2",
     script : "./dist/main.js",
     instances: 1,
     watch: false,
